@@ -16,11 +16,16 @@ KMPen is a visualization tool to create Kaplan Meier survival graph.
 - Kaplan Meier Survival Graph
   ![Full Page](screenshots/km_graph.png)
 
-### Tools
-- Bootstrap 5
-- Datatable
-- jQuery
-- ChartJS
+### Library used
+- jQuery: Version 3.6.0.min
+- ChartJS: Version 3.6.2
+- Datatable: Version 1.11.3
+- jsPDF: Version 1.3.2
+- Bootstrap: Version 5.1.3
+- Bootstrap Icons: Version 1.5.0
+
+## ToDO
+- Add convert to SVG button. Tutorial can be found in [Canvas to SVG](https://editor.p5js.org/jeffThompson/sketches/9UBWBj32R).
 
 ## Support
 
@@ -60,5 +65,8 @@ Please contribute using [Github Flow](https://guides.github.com/introduction/flo
 ### Resources
 - [Understanding survival analysis: Kaplan-Meier estimate](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059453/)
 - [A PRACTICAL GUIDE TO UNDERSTANDING KAPLAN-MEIER CURVES](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3932959/)
-- [Chartjs line chart documentation](https://www.chartjs.org/docs/latest/charts/line.html)
+- [Chartjs line chart documentation](https://www.chartjs.org/docs/3.6.2/charts/line.html)
+- [Chartjs graph export](https://www.chartjs.org/docs/3.6.2/developers/api.html#tobase64image-type-quality)
+- [JSPDF documentation](https://github.com/matb/jsPDF)
+- [Chartjs canvas background](https://www.chartjs.org/docs/3.6.2/configuration/canvas-background.html)
 - [Kaplan Meier graph example](https://canvasxpress.org/examples/kaplan-meier-1.html)
