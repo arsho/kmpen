@@ -10,11 +10,11 @@ KMPen is a visualization tool to create Kaplan Meier survival graph.
 ### Demo
 
 - Graph with data
-  ![Full Page](Screenshots/full.png)
+  ![Full Page](screenshots/full.png)
 - Data
-  ![data](Screenshots/data.png)
+  ![data](screenshots/data.png)
 - Kaplan Meier Survival Graph
-  ![Full Page](Screenshots/km_graph.png)
+  ![Full Page](screenshots/km_graph.png)
 
 ### Tools
 - Bootstrap 5
