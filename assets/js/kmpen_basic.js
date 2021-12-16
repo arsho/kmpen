@@ -8,6 +8,73 @@ const CHART_COLORS = {
     grey: 'rgb(201, 203, 207)'
 };
 
+const DATASET_1 = [
+    [6, 1, 1],
+    [12, 1, 1],
+    [21, 1, 1],
+    [27, 1, 1],
+    [32, 1, 1],
+    [39, 1, 1],
+    [43, 1, 1],
+    [43, 1, 1],
+    [46, 1, 0],
+    [89, 1, 1],
+    [115, 1, 0],
+    [139, 1, 0],
+    [181, 1, 0],
+    [211, 1, 0],
+    [217, 1, 0],
+    [261, 1, 1],
+    [263, 1, 1],
+    [270, 1, 1],
+    [295, 1, 0],
+    [311, 1, 1],
+    [335, 1, 0],
+    [346, 1, 0],
+    [365, 1, 0]
+];
+const DATASET_2 = [
+    [9, 2, 1],
+    [13, 2, 1],
+    [27, 2, 1],
+    [38, 2, 1],
+    [45, 2, 0],
+    [49, 2, 1],
+    [49, 2, 1],
+    [79, 2, 0],
+    [93, 2, 1],
+    [118, 2, 0],
+    [126, 2, 1],
+    [159, 2, 0],
+    [211, 2, 0],
+    [218, 2, 1],
+    [229, 2, 0],
+    [263, 2, 0],
+    [298, 2, 0],
+    [301, 2, 1],
+    [333, 2, 1],
+    [346, 2, 0],
+    [353, 2, 0],
+    [362, 2, 0]
+];
+const DATASET_3 = [
+    [1, 1, 1],
+    [2, 1, 1],
+    [3, 1, 1],
+    [4, 1, 1],
+    [4.5, 1, 1],
+    [5, 1, 0]
+];
+const DATASET_4 = [
+    [0.5, 2, 1],
+    [0.75, 2, 1],
+    [1, 2, 1],
+    [1.5, 2, 0],
+    [2, 2, 1],
+    [3.5, 2, 1],
+];
+
+
 function getRandomInt(min_value, max_value) {
     min_value = Math.ceil(min_value);
     max_value = Math.floor(max_value);
@@ -73,72 +140,31 @@ $(document).ready(function () {
     $("#container").show();
     $("#graph").hide();
 
-    function get_file_data(datafile) {
-        var dataset = {};
-        $.ajax({
-            url: '../datafiles/' + datafile,
-            type: "GET",
-            async: false,
-            success: function (data) {
-                let lines = data.split("\n");
-                if (lines.length > 2) {
-                    for (let i = 1; i < lines.length; i++) {
-                        let line = lines[i].trim();
-                        if (line !== "") {
-                            let current_data = line.split("\t");
-                            if (current_data !== "") {
-                                let row = {};
-                                row.barcode = current_data[0];
-                                row.time = parseInt(current_data[1]);
-                                if (row.time < 0) {
-                                    continue;
-                                }
-                                row.status = parseInt(current_data[2]);
-                                row.a1bg = current_data[3];
-                                row.group1 = current_data[4];
-                                row.group2 = current_data[5];
-                                const group = row.group1 + " + " + row.group2;
-                                if (!dataset.hasOwnProperty(group)) {
-                                    dataset[group] = [];
-                                }
-                                dataset[group].push(row);
-                            }
-                        }
-                    }
-                }
-            },
-        });
-        return dataset;
-    }
-
-
-    function get_dataset(dataset_type) {
-        var dataset = {};
-        let datafile;
+    function get_dataset(dataset_type, number_of_groups) {
+        var dataset = [];
         // data: Time, Group/Factor, Outcome/Censor
-// A1BG-S-KMinput.txt  : is tab separated file. It has following columns.
-// 1.       Barcode: Patient ID
-// 2.       Time: Time in days
-// 3.       Status: patient life status (death=0, alive=1)
-// 4.       A1BG: Expression value of A1BG gene in cancer patients
-// 5.       ExpressionLevel:  is Group1, dividing patients based on A1BG expression level
-// 6.       Sex: id Group2, dividing patients based on patient’s gender
-//
-// A1BG-R-KMinput.txt  : is tab separated file. It has following columns.
-// 1.       Barcode: Patient ID
-// 2.       Time: Time in days
-// 3.       Status: patient life status (death=0, alive=1)
-// 4.       A1BG: Expression value of A1BG gene in cancer patients
-// 5.       ExpressionLevel:  is Group1, dividing patients based on A1BG expression level
-// 6.       Race: id Group2, dividing patients based on patient’s race
-
-
-        if (dataset_type === "race_dataset") {
-            datafile = 'A1BG-R-KMinput.txt';
-        } else if (dataset_type === "gender_dataset") {
-            datafile = 'A1BG-S-KMinput.txt';
+        if (dataset_type === "random") {
+            for (let i = 0; i < number_of_groups; i++) {
+                let current_dataset = [];
+                let group_number = i + 1;
+                for (let j = 0; j < getRandomInt(15, 45); j++) {
+                    current_dataset.push([getRandomInt(1, 500), group_number, getRandomInt(0, 1)]);
+                }
+                dataset.push(current_dataset);
+            }
+        } else if (dataset_type === "default_dataset_1") {
+            dataset.push(DATASET_1);
+            dataset.push(DATASET_2);
+        } else if (dataset_type === "default_dataset_2") {
+            dataset.push(DATASET_3);
+            dataset.push(DATASET_4);
         }
-        return get_file_data(datafile);
+        for (let i = 0; i < dataset.length; i++) {
+            dataset[i].sort(function (a, b) {
+                return a[0] - b[0];
+            });
+        }
+        return dataset;
     }
 
     function get_km_data(dataset) {
@@ -152,8 +178,8 @@ $(document).ready(function () {
             "y": current_probability
         });
         for (let i = 0; i < dataset.length; i++) {
-            const current_time = dataset[i].time;
-            const censor = dataset[i].status;
+            const current_time = dataset[i][0];
+            const censor = dataset[i][2];
             normal_data.push({
                 "x": current_time,
                 "y": current_probability
@@ -165,9 +191,9 @@ $(document).ready(function () {
                 } else {
                     time_flag[current_time] = true;
                     for (let j = i; j < dataset.length; j++) {
-                        if (dataset[j].time !== current_time) {
+                        if (dataset[j][0] !== current_time) {
                             break;
-                        } else if (dataset[j].status === 1) {
+                        } else if (dataset[j][2] === 1) {
                             death_count++;
                         }
                     }
@@ -239,9 +265,8 @@ $(document).ready(function () {
         let default_colors = [CHART_COLORS.green, CHART_COLORS.red,
             CHART_COLORS.purple, CHART_COLORS.blue,
             CHART_COLORS.yellow, CHART_COLORS.orange];
-
-        for (const group in datasets) {
-            let dataset = datasets[group];
+        for (let i = 0; i < datasets.length; i++) {
+            let dataset = datasets[i];
             let km_data = get_km_data(dataset);
             let normal_data = km_data["normal_data"];
             let censor_data = km_data["censor_data"];
@@ -255,7 +280,7 @@ $(document).ready(function () {
             }
             const line_chart_data = {
                 type: 'line',
-                label: group,
+                label: 'Group ' + parseInt(i + 1),
                 backgroundColor: color_1,
                 borderColor: color_1,
                 data: normal_data,
@@ -267,9 +292,9 @@ $(document).ready(function () {
             };
             const scatter_chart_data = {
                 type: 'scatter',
-                label: group + ' - Censored',
-                backgroundColor: color_1,
-                borderColor: color_1,
+                label: 'Group ' + parseInt(i + 1) + ' - Censored',
+                backgroundColor: color_2,
+                borderColor: color_2,
                 data: censor_data,
                 radius: 7,
                 hoverRadius: 7,
@@ -314,7 +339,7 @@ $(document).ready(function () {
                         title: {
                             display: true,
                             align: 'center',
-                            text: 'Time (days)'
+                            text: 'Time'
                         }
                     },
                     y: {
@@ -327,7 +352,7 @@ $(document).ready(function () {
                         title: {
                             display: true,
                             align: 'center',
-                            text: 'Survival Probability'
+                            text: 'Survival'
                         }
                     }
                 },
@@ -349,15 +374,19 @@ $(document).ready(function () {
         $("#graph").hide();
         const id = $(this).attr("id");
         let dataset, dataset_label;
-        if (id === "race_dataset") {
-            dataset = get_dataset("race_dataset");
-            dataset_label = ": Dataset from Race";
-        } else if (id === "gender_dataset") {
-            dataset = get_dataset("gender_dataset");
-            dataset_label = ": Dataset from Gender";
+        if (id === "random_dataset") {
+            dataset = get_dataset("random", getRandomInt(1, 4));
+            dataset_label = ": Random dataset";
+        } else if (id === "default_dataset_1") {
+            dataset = get_dataset("default_dataset_1");
+            dataset_label = ": Dataset from <a target='_blank' href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059453/'>Goel, et al.: Understanding survival analysis</a>";
+        } else if (id === "default_dataset_2") {
+            dataset = get_dataset("default_dataset_2");
+            dataset_label = ": Dataset from <a target='_blank' href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3932959/'>Rich, et al.: A practical guide to understanding Kaplan-Meier curves</a>";
         }
         $("#dataset_label").html(dataset_label);
-        // show_data(dataset);
+
+        show_data(dataset);
         show_graph(dataset);
         $("#graph").show("slow");
     });
