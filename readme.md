@@ -26,6 +26,7 @@ KMPen is a visualization tool to create Kaplan Meier survival graph.
 
 ## ToDO
 - Add convert to SVG button. Tutorial can be found in [Canvas to SVG](https://editor.p5js.org/jeffThompson/sketches/9UBWBj32R).
+- Remove censor and add alive probability
 
 ## Support
 
@@ -70,3 +71,4 @@ Please contribute using [Github Flow](https://guides.github.com/introduction/flo
 - [JSPDF documentation](https://github.com/matb/jsPDF)
 - [Chartjs canvas background](https://www.chartjs.org/docs/3.6.2/configuration/canvas-background.html)
 - [Kaplan Meier graph example](https://canvasxpress.org/examples/kaplan-meier-1.html)
+- [Remove some points in line chart chartjs - Javascript Chart.js](http://www.java2s.com/example/javascript/chart.js/remove-some-points-in-line-chart-chartjs.html)

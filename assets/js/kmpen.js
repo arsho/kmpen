@@ -75,6 +75,7 @@ $(document).ready(function () {
 
     function get_file_data(datafile) {
         var dataset = {};
+        var columns = [];
         $.ajax({
             url: '../datafiles/' + datafile,
             type: "GET",
@@ -82,17 +83,18 @@ $(document).ready(function () {
             success: function (data) {
                 let lines = data.split("\n");
                 if (lines.length > 2) {
-                    for (let i = 1; i < lines.length; i++) {
+                    for (let i = 0; i < lines.length; i++) {
                         let line = lines[i].trim();
                         if (line !== "") {
                             let current_data = line.split("\t");
                             if (current_data !== "") {
+                                if (i == 0) {
+                                    columns = current_data;
+                                    continue;
+                                }
                                 let row = {};
                                 row.barcode = current_data[0];
                                 row.time = parseInt(current_data[1]);
-                                if (row.time < 0) {
-                                    continue;
-                                }
                                 row.status = parseInt(current_data[2]);
                                 row.a1bg = current_data[3];
                                 row.group1 = current_data[4];
@@ -101,6 +103,9 @@ $(document).ready(function () {
                                 if (!dataset.hasOwnProperty(group)) {
                                     dataset[group] = [];
                                 }
+                                if (row.time < 0) {
+                                    continue;
+                                }
                                 dataset[group].push(row);
                             }
                         }
@@ -108,7 +113,18 @@ $(document).ready(function () {
                 }
             },
         });
-        return dataset;
+
+        for (let i = 0; i < dataset.length; i++) {
+            dataset[i].sort(function (a, b) {
+                return a[0] - b[0];
+            });
+        }
+        for (const group in dataset) {
+            dataset[group].sort(function (a, b) {
+                return a.time - b.time;
+            });
+        }
+        return {"dataset": dataset, "columns": columns};
     }
 
 
@@ -144,20 +160,20 @@ $(document).ready(function () {
     function get_km_data(dataset) {
         let time_flag = {};
         let normal_data = [];
-        let censor_data = [];
+        let point_radius_data = [];
         let number_of_alive = dataset.length;
         let current_probability = 1.0;
         normal_data.push({
-            "x": 0,
+            "x": dataset[0].time,
             "y": current_probability
         });
         for (let i = 0; i < dataset.length; i++) {
             const current_time = dataset[i].time;
             const censor = dataset[i].status;
-            normal_data.push({
-                "x": current_time,
-                "y": current_probability
-            });
+            // normal_data.push({
+            //     "x": current_time,
+            //     "y": current_probability
+            // });
             let death_count = 0;
             if (censor === 1) {
                 if (time_flag[current_time]) {
@@ -174,12 +190,10 @@ $(document).ready(function () {
                     current_probability = current_probability * (1.0 - (death_count / number_of_alive));
                     number_of_alive -= death_count;
                 }
+                point_radius_data.push(7);
             } else {
                 number_of_alive--;
-                censor_data.push({
-                    "x": current_time,
-                    "y": current_probability
-                });
+                point_radius_data.push(7);
             }
             normal_data.push({
                 "x": current_time,
@@ -187,50 +201,54 @@ $(document).ready(function () {
             });
 
         }
-        return {"normal_data": normal_data, "censor_data": censor_data};
+        return {"normal_data": normal_data, "point_radius_data": point_radius_data};
     }
 
-    function show_data(datasets) {
+    function show_data(datasets, columns) {
 
         let empty_tables = '<div class="row">';
-        for (let i = 0; i < datasets.length; i++) {
-            let id = "datatable_" + i;
-            empty_tables += '<div class="col-12 col-md-6 mb-4">';
+        let table_id = 1;
+        for (const group in datasets) {
+            let id = "datatable_" + parseInt(table_id);
+            empty_tables += '<div class="col-12 col-md-6 mb-5">';
             empty_tables += '<table id="' + id + '" class="table table-sm table-bordered table-striped caption-top table-responsive-md">';
             empty_tables += '<caption class="card-subtitle text-center p-2 mb-2 bg-dark bg-gradient text-white">';
-            empty_tables += 'Dataset: ' + parseInt(i + 1);
+            empty_tables += 'Dataset: ' + group;
             empty_tables += '</caption>';
             empty_tables += '<thead class="table-light">';
             empty_tables += '<tr>';
-            empty_tables += '    <th>Subject</th>';
-            empty_tables += '    <th>Time</th>';
-            empty_tables += '    <th>Group</th>';
-            empty_tables += '    <th>Censor</th>';
+            for (let i = 0; i < columns.length; i++) {
+                empty_tables += '    <th>' + columns[i] + '</th>';
+            }
             empty_tables += '</tr>';
             empty_tables += '</thead>';
             empty_tables += '<tbody>';
             empty_tables += '</tbody>';
             empty_tables += '</table>';
             empty_tables += '</div>';
+            table_id++;
         }
         empty_tables += '</div>';
 
         $("#data_tables").html(empty_tables);
-
-        for (let i = 0; i < datasets.length; i++) {
-            let dataset = datasets[i];
-            let id = "datatable_" + i;
-            var data_with_index = [];
+        table_id = 1;
+        for (const group in datasets) {
+            let dataset = datasets[group];
+            console.log(dataset);
+            let id = "datatable_" + parseInt(table_id);
+            var table_data = [];
             for (let i = 0; i < dataset.length; i++) {
-                let current_row = [i + 1];
-                for (let j = 0; j < dataset[i].length; j++) {
-                    current_row.push(dataset[i][j]);
+                let current_row = [];
+                const row = dataset[i];
+                for (const key in row) {
+                    current_row.push(row[key]);
                 }
-                data_with_index.push(current_row);
+                table_data.push(current_row);
             }
             var table = $('#' + id).DataTable();
             table.clear();
-            table.rows.add(data_with_index).draw();
+            table.rows.add(table_data).draw();
+            table_id++;
         }
     }
 
@@ -239,48 +257,50 @@ $(document).ready(function () {
         let default_colors = [CHART_COLORS.green, CHART_COLORS.red,
             CHART_COLORS.purple, CHART_COLORS.blue,
             CHART_COLORS.yellow, CHART_COLORS.orange];
-
+        let color_index = 0;
         for (const group in datasets) {
             let dataset = datasets[group];
             let km_data = get_km_data(dataset);
             let normal_data = km_data["normal_data"];
-            let censor_data = km_data["censor_data"];
-            let color_1, color_2;
-            if (datasets.length <= 3) {
-                color_1 = default_colors[i * 2];
-                color_2 = default_colors[i * 2 + 1];
+            let point_radius_data = km_data["point_radius_data"];
+            let color_1;
+
+            if (Object.keys(datasets).length <= 12) {
+                color_1 = default_colors[color_index];
+                color_index++;
             } else {
                 color_1 = getRandomColors();
-                color_2 = getRandomColors();
             }
             const line_chart_data = {
                 type: 'line',
-                label: group,
+                label: group + ' (n=' + parseInt(datasets[group].length) + ')',
                 backgroundColor: color_1,
                 borderColor: color_1,
                 data: normal_data,
                 fill: false,
                 stepped: 'after',
-                radius: 0,
+                radius: point_radius_data,
                 hitRadius: 0,
-                borderWidth: 3,
-            };
-            const scatter_chart_data = {
-                type: 'scatter',
-                label: group + ' - Censored',
-                backgroundColor: color_1,
-                borderColor: color_1,
-                data: censor_data,
-                radius: 7,
                 hoverRadius: 7,
                 borderWidth: 3,
                 hoverBorderWidth: 3,
                 pointStyle: 'cross',
             };
-            chart_data.push(scatter_chart_data);
+            // const scatter_chart_data = {
+            //     type: 'scatter',
+            //     label: group + ' - Censored',
+            //     backgroundColor: color_1,
+            //     borderColor: color_1,
+            //     data: censor_data,
+            //     radius: 7,
+            //     hoverRadius: 7,
+            //     borderWidth: 3,
+            //     hoverBorderWidth: 3,
+            //     pointStyle: 'cross',
+            // };
+            // chart_data.push(scatter_chart_data);
             chart_data.push(line_chart_data);
         }
-
 
         const canvas_background_plugin = {
             id: 'custom_canvas_background_color',
@@ -300,12 +320,16 @@ $(document).ready(function () {
                 plugins: {
                     legend: {
                         labels: {
-                            usePointStyle: true,
+                            // usePointStyle: true,
+                            filter: item => {
+                                return !item.text.includes("Censored")
+                            }
                         },
                     }
                 },
                 animation: false,
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     x: {
                         type: 'linear',
@@ -351,14 +375,14 @@ $(document).ready(function () {
         let dataset, dataset_label;
         if (id === "race_dataset") {
             dataset = get_dataset("race_dataset");
-            dataset_label = ": Dataset from Race";
+            dataset_label = ": Dataset from A1BG expression level & race on KIRC patient survival dataset";
         } else if (id === "gender_dataset") {
             dataset = get_dataset("gender_dataset");
-            dataset_label = ": Dataset from Gender";
+            dataset_label = ": Dataset from A1BG expression level & gender on KIRC patient survival dataset";
         }
-        $("#dataset_label").html(dataset_label);
-        // show_data(dataset);
-        show_graph(dataset);
+        $(".dataset_label").html(dataset_label);
+        show_data(dataset.dataset, dataset.columns);
+        show_graph(dataset.dataset);
         $("#graph").show("slow");
     });
 
