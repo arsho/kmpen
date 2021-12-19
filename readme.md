@@ -26,7 +26,7 @@ KMPen is a visualization tool to create Kaplan Meier survival graph.
 
 ## ToDO
 - Add convert to SVG button. Tutorial can be found in [Canvas to SVG](https://editor.p5js.org/jeffThompson/sketches/9UBWBj32R).
-- Remove censor and add alive probability
+- Fix PDF in large screen (laptop)
 
 ## Support
 
