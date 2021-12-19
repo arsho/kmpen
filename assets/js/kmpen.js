@@ -74,7 +74,7 @@ $(document).ready(function () {
     $("#graph").hide();
 
     function get_file_data(datafile) {
-        var dataset = {};
+        var rows = {};
         var columns = [];
         $.ajax({
             url: '../datafiles/' + datafile,
@@ -88,7 +88,7 @@ $(document).ready(function () {
                         if (line !== "") {
                             let current_data = line.split("\t");
                             if (current_data !== "") {
-                                if (i == 0) {
+                                if (i === 0) {
                                     columns = current_data;
                                     continue;
                                 }
@@ -100,13 +100,13 @@ $(document).ready(function () {
                                 row.group1 = current_data[4];
                                 row.group2 = current_data[5];
                                 const group = row.group1 + " + " + row.group2;
-                                if (!dataset.hasOwnProperty(group)) {
-                                    dataset[group] = [];
+                                if (!rows.hasOwnProperty(group)) {
+                                    rows[group] = [];
                                 }
                                 if (row.time < 0) {
                                     continue;
                                 }
-                                dataset[group].push(row);
+                                rows[group].push(row);
                             }
                         }
                     }
@@ -114,24 +114,16 @@ $(document).ready(function () {
             },
         });
 
-        for (let i = 0; i < dataset.length; i++) {
-            dataset[i].sort(function (a, b) {
-                return a[0] - b[0];
-            });
-        }
-        for (const group in dataset) {
-            dataset[group].sort(function (a, b) {
+        for (const group in rows) {
+            rows[group].sort(function (a, b) {
                 return a.time - b.time;
             });
         }
-        return {"dataset": dataset, "columns": columns};
+        return {"rows": rows, "columns": columns};
     }
 
 
     function get_dataset(dataset_type) {
-        var dataset = {};
-        let datafile;
-        // data: Time, Group/Factor, Outcome/Censor
 // A1BG-S-KMinput.txt  : is tab separated file. It has following columns.
 // 1.       Barcode: Patient ID
 // 2.       Time: Time in days
@@ -148,13 +140,22 @@ $(document).ready(function () {
 // 5.       ExpressionLevel:  is Group1, dividing patients based on A1BG expression level
 // 6.       Race: id Group2, dividing patients based on patient’s race
 
-
+        let data, datafile, description, label;
         if (dataset_type === "race_dataset") {
             datafile = 'A1BG-R-KMinput.txt';
+            description = 'Effect of A1BG expression level & race on KIRC patient survival dataset';
+            label = ": Dataset from A1BG expression level & race on KIRC patient survival dataset";
         } else if (dataset_type === "gender_dataset") {
             datafile = 'A1BG-S-KMinput.txt';
+            description = 'Effect of A1BG expression level & gender on KIRC patient survival dataset';
+            label = ": Dataset from A1BG expression level & gender on KIRC patient survival dataset";
         }
-        return get_file_data(datafile);
+        data = get_file_data(datafile);
+        return {
+            "data": data,
+            "description": description,
+            "label": label
+        }
     }
 
     function get_km_data(dataset) {
@@ -169,13 +170,9 @@ $(document).ready(function () {
         });
         for (let i = 0; i < dataset.length; i++) {
             const current_time = dataset[i].time;
-            const censor = dataset[i].status;
-            // normal_data.push({
-            //     "x": current_time,
-            //     "y": current_probability
-            // });
+            const is_alive = dataset[i].status;
             let death_count = 0;
-            if (censor === 1) {
+            if (is_alive === 0) {
                 if (time_flag[current_time]) {
                     continue;
                 } else {
@@ -183,14 +180,14 @@ $(document).ready(function () {
                     for (let j = i; j < dataset.length; j++) {
                         if (dataset[j].time !== current_time) {
                             break;
-                        } else if (dataset[j].status === 1) {
+                        } else if (dataset[j].status === 0) {
                             death_count++;
                         }
                     }
                     current_probability = current_probability * (1.0 - (death_count / number_of_alive));
                     number_of_alive -= death_count;
                 }
-                point_radius_data.push(7);
+                point_radius_data.push(0);
             } else {
                 number_of_alive--;
                 point_radius_data.push(7);
@@ -204,11 +201,11 @@ $(document).ready(function () {
         return {"normal_data": normal_data, "point_radius_data": point_radius_data};
     }
 
-    function show_data(datasets, columns) {
+    function show_data(rows, columns) {
 
         let empty_tables = '<div class="row">';
         let table_id = 1;
-        for (const group in datasets) {
+        for (const group in rows) {
             let id = "datatable_" + parseInt(table_id);
             empty_tables += '<div class="col-12 col-md-6 mb-5">';
             empty_tables += '<table id="' + id + '" class="table table-sm table-bordered table-striped caption-top table-responsive-md">';
@@ -232,9 +229,8 @@ $(document).ready(function () {
 
         $("#data_tables").html(empty_tables);
         table_id = 1;
-        for (const group in datasets) {
-            let dataset = datasets[group];
-            console.log(dataset);
+        for (const group in rows) {
+            let dataset = rows[group];
             let id = "datatable_" + parseInt(table_id);
             var table_data = [];
             for (let i = 0; i < dataset.length; i++) {
@@ -252,33 +248,33 @@ $(document).ready(function () {
         }
     }
 
-    function show_graph(datasets) {
+    function show_graph(rows, chart_title) {
         let chart_data = [];
         let default_colors = [CHART_COLORS.green, CHART_COLORS.red,
             CHART_COLORS.purple, CHART_COLORS.blue,
             CHART_COLORS.yellow, CHART_COLORS.orange];
         let color_index = 0;
-        for (const group in datasets) {
-            let dataset = datasets[group];
+        for (const group in rows) {
+            let dataset = rows[group];
             let km_data = get_km_data(dataset);
             let normal_data = km_data["normal_data"];
             let point_radius_data = km_data["point_radius_data"];
-            let color_1;
+            let current_chart_color;
 
-            if (Object.keys(datasets).length <= 12) {
-                color_1 = default_colors[color_index];
+            if (Object.keys(rows).length <= 12) {
+                current_chart_color = default_colors[color_index];
                 color_index++;
             } else {
-                color_1 = getRandomColors();
+                current_chart_color = getRandomColors();
             }
             const line_chart_data = {
                 type: 'line',
-                label: group + ' (n=' + parseInt(datasets[group].length) + ')',
-                backgroundColor: color_1,
-                borderColor: color_1,
+                label: group + ' (n=' + parseInt(rows[group].length) + ')',
+                backgroundColor: current_chart_color,
+                borderColor: current_chart_color,
                 data: normal_data,
                 fill: false,
-                stepped: 'after',
+                stepped: true,
                 radius: point_radius_data,
                 hitRadius: 0,
                 hoverRadius: 7,
@@ -286,19 +282,6 @@ $(document).ready(function () {
                 hoverBorderWidth: 3,
                 pointStyle: 'cross',
             };
-            // const scatter_chart_data = {
-            //     type: 'scatter',
-            //     label: group + ' - Censored',
-            //     backgroundColor: color_1,
-            //     borderColor: color_1,
-            //     data: censor_data,
-            //     radius: 7,
-            //     hoverRadius: 7,
-            //     borderWidth: 3,
-            //     hoverBorderWidth: 3,
-            //     pointStyle: 'cross',
-            // };
-            // chart_data.push(scatter_chart_data);
             chart_data.push(line_chart_data);
         }
 
@@ -321,10 +304,15 @@ $(document).ready(function () {
                     legend: {
                         labels: {
                             // usePointStyle: true,
-                            filter: item => {
-                                return !item.text.includes("Censored")
-                            }
                         },
+                    },
+                    title: {
+                        display: true,
+                        text: chart_title,
+                        padding: {
+                            top: 10,
+                            bottom: 10
+                        }
                     }
                 },
                 animation: false,
@@ -372,17 +360,15 @@ $(document).ready(function () {
     $(".graph_data_btn").on("click", function () {
         $("#graph").hide();
         const id = $(this).attr("id");
-        let dataset, dataset_label;
+        let dataset;
         if (id === "race_dataset") {
             dataset = get_dataset("race_dataset");
-            dataset_label = ": Dataset from A1BG expression level & race on KIRC patient survival dataset";
         } else if (id === "gender_dataset") {
             dataset = get_dataset("gender_dataset");
-            dataset_label = ": Dataset from A1BG expression level & gender on KIRC patient survival dataset";
         }
-        $(".dataset_label").html(dataset_label);
-        show_data(dataset.dataset, dataset.columns);
-        show_graph(dataset.dataset);
+        $(".dataset_label").html(dataset.label);
+        show_data(dataset.data.rows, dataset.data.columns);
+        show_graph(dataset.data.rows, dataset.description);
         $("#graph").show("slow");
     });
 
