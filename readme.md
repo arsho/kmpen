@@ -1,6 +1,6 @@
 # Kaplan Meier Graph
 
-KMPen is a visualization tool to create Kaplan Meier survival graph.
+KMPen is a visualization tool to create Kaplan Meier survival probability graph.
 
 ### Features
 #### KIRC:
