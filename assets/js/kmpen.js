@@ -190,7 +190,7 @@ $(document).ready(function () {
                 point_radius_data.push(0);
             } else {
                 number_of_alive--;
-                point_radius_data.push(7);
+                point_radius_data.push(4);
             }
             normal_data.push({
                 "x": current_time,
@@ -277,9 +277,9 @@ $(document).ready(function () {
                 stepped: true,
                 radius: point_radius_data,
                 hitRadius: 0,
-                hoverRadius: 7,
-                borderWidth: 3,
-                hoverBorderWidth: 3,
+                hoverRadius: 4,
+                borderWidth: 2,
+                hoverBorderWidth: 2,
                 pointStyle: 'cross',
             };
             chart_data.push(line_chart_data);
@@ -302,9 +302,12 @@ $(document).ready(function () {
             options: {
                 plugins: {
                     legend: {
+                        display: true,
+                        position: 'bottom',
                         labels: {
-                            // usePointStyle: true,
-                        },
+                            boxWidth: 15,
+                            padding: 15
+                        }
                     },
                     title: {
                         display: true,
@@ -312,12 +315,14 @@ $(document).ready(function () {
                         padding: {
                             top: 10,
                             bottom: 10
+                        },
+                        font: {
+                            size: 18
                         }
                     }
                 },
                 animation: false,
                 responsive: true,
-                maintainAspectRatio: false,
                 scales: {
                     x: {
                         type: 'linear',
@@ -334,7 +339,7 @@ $(document).ready(function () {
                         min: 0.0,
                         max: 1.1,
                         ticks: {
-                            stepSize: 0.1 // this worked as expected
+                            stepSize: 0.1
                         },
                         title: {
                             display: true,
@@ -388,11 +393,11 @@ $(document).ready(function () {
             } else if (id === "pdf_btn") {
                 const aspect_ratio = current_chart.width / current_chart.height;
                 filename = "km_graph.pdf";
-                var pdf = new jsPDF('p', 'pt', 'a4');
+                var pdf = new jsPDF('l', 'pt', 'a4');
                 const pdf_width = pdf.internal.pageSize.width;
-                const pdf_max_width = get_pdf_size(pdf_width, 'px') - 0;
-                if (current_chart.width > pdf_max_width) {
-                    current_chart.resize(pdf_max_width, pdf_max_width * (1 / aspect_ratio));
+                const pdf_width_px = get_pdf_size(pdf_width, 'px');
+                if (current_chart.width > pdf_width_px) {
+                    current_chart.resize(pdf_width, pdf_width * (1.0 / aspect_ratio));
                 }
                 canvas_data = current_chart.toBase64Image();
                 pdf.addImage(canvas_data, 'PNG', 0, 20);
