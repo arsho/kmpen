@@ -90,3 +90,4 @@ Please contribute using [Github Flow](https://guides.github.com/introduction/flo
 - [Chartjs canvas background](https://www.chartjs.org/docs/3.6.2/configuration/canvas-background.html)
 - [Kaplan Meier graph example](https://canvasxpress.org/examples/kaplan-meier-1.html)
 - [Remove some points in line chart chartjs - Javascript Chart.js](http://www.java2s.com/example/javascript/chart.js/remove-some-points-in-line-chart-chartjs.html)
+- [Current demo](http://ualcan.path.uab.edu/cgi-bin/TCGA-survival1.pl?genenam=A1BG&ctype=KIRC)
