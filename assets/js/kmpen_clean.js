@@ -54,8 +54,7 @@ function get_pdf_size(points, unit) {
     return points * multiplier;
 }
 
-
-$(document).ready(function () {
+function apply_password_protection() {
     $("html").hide();
     let password = prompt('Enter Password to access the tool', '');
     if (password !== 'uab') {
@@ -63,6 +62,9 @@ $(document).ready(function () {
     } else {
         $("html").show();
     }
+}
+
+$(document).ready(function () {
     $("#container").show();
     $("#graph").hide();
 
@@ -114,7 +116,6 @@ $(document).ready(function () {
         }
         return {"rows": rows, "columns": columns};
     }
-
 
     function get_dataset(dataset_type) {
 // A1BG-S-KMinput.txt  : is tab separated file. It has following columns.
@@ -197,7 +198,7 @@ $(document).ready(function () {
         };
     }
 
-    function show_graph(rows, chart_title) {
+    function show_graph(rows, chart_title, chart_subtitle) {
         let chart_data = [];
         let default_colors = [CHART_COLORS.green, CHART_COLORS.red,
             CHART_COLORS.purple, CHART_COLORS.blue,
@@ -268,6 +269,10 @@ $(document).ready(function () {
                         font: {
                             size: 18
                         }
+                    },
+                    subtitle: {
+                        display: true,
+                        text: chart_subtitle
                     }
                 },
                 animation: false,
@@ -321,11 +326,9 @@ $(document).ready(function () {
         } else if (id === "gender_dataset") {
             dataset = get_dataset("gender_dataset");
         }
-        $(".dataset_label").html(dataset.label);
-        show_graph(dataset.data.rows, dataset.description);
+        show_graph(dataset.data.rows, dataset.description, dataset.label);
         $("#graph").show("slow");
     });
-
 
     $(".download_chart").on("click", function () {
         const id = $(this).attr("id");
