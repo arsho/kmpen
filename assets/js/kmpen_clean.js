@@ -72,7 +72,7 @@ $(document).ready(function () {
         var rows = {};
         var columns = [];
         $.ajax({
-            url: 'datafiles/' + datafile,
+            url: datafile,
             type: "GET",
             async: false,
             success: function (data) {
@@ -91,10 +91,12 @@ $(document).ready(function () {
                                 row.barcode = current_data[0];
                                 row.time = parseInt(current_data[1]);
                                 row.status = parseInt(current_data[2]);
-                                row.a1bg = current_data[3];
-                                row.group1 = current_data[4];
-                                row.group2 = current_data[5];
-                                const group = row.group1 + " + " + row.group2;
+                                row.gene = current_data[3];
+                                row.groups = [];
+                                for(let j = 4; j < current_data.length; j++){
+                                    row.groups.push(current_data[j]);
+                                }
+                                const group = row.groups.join("+");
                                 if (!rows.hasOwnProperty(group)) {
                                     rows[group] = [];
                                 }
@@ -117,30 +119,31 @@ $(document).ready(function () {
         return {"rows": rows, "columns": columns};
     }
 
+
+    // GENE-Exp-CANCER-KMinput.txt : is tab separated file. It has following columns.
+    // 1. Barcode: Patient ID
+    // 2. Time: Time in days
+    // 3. Status: patient life status (death=0, alive=1)
+    // 4. A1BG: Expression value of A1BG gene in cancer patients
+    // 5. ExpressionLevel:  is Group1, dividing patients based on GENE expression level
+
+    // GENE-Exp-Gender/Race-CANCER-KMinput.txt: is tab separated file. It has following columns.
+    // 1. Barcode: Patient ID
+    // 2. Time: Time in days
+    // 3. Status: patient life status (death=0, alive=1)
+    // 4. A1BG: Expression value of A1BG gene in cancer patients
+    // 5. ExpressionLevel:  is Group1, dividing patients based on GENE expression level
+    // 6. Gender / Race: id Group2, dividing patients based on patient’s gender
+
     function get_dataset(dataset_type) {
-// A1BG-S-KMinput.txt  : is tab separated file. It has following columns.
-// 1.       Barcode: Patient ID
-// 2.       Time: Time in days
-// 3.       Status: patient life status (death=0, alive=1)
-// 4.       A1BG: Expression value of A1BG gene in cancer patients
-// 5.       ExpressionLevel:  is Group1, dividing patients based on A1BG expression level
-// 6.       Sex: id Group2, dividing patients based on patient’s gender
-//
-// A1BG-R-KMinput.txt  : is tab separated file. It has following columns.
-// 1.       Barcode: Patient ID
-// 2.       Time: Time in days
-// 3.       Status: patient life status (death=0, alive=1)
-// 4.       A1BG: Expression value of A1BG gene in cancer patients
-// 5.       ExpressionLevel:  is Group1, dividing patients based on A1BG expression level
-// 6.       Race: id Group2, dividing patients based on patient’s race
 
         let data, datafile, description, label;
         if (dataset_type === "race_dataset") {
-            datafile = 'A1BG-R-KMinput.txt';
+            datafile = 'datafiles/A1BG-R-KMinput.txt';
             description = 'Effect of A1BG expression level & race on KIRC patient survival dataset';
             label = ": Dataset from A1BG expression level & race on KIRC patient survival dataset";
         } else if (dataset_type === "gender_dataset") {
-            datafile = 'A1BG-S-KMinput.txt';
+            datafile = 'datafiles/A1BG-S-KMinput.txt';
             description = 'Effect of A1BG expression level & gender on KIRC patient survival dataset';
             label = ": Dataset from A1BG expression level & gender on KIRC patient survival dataset";
         }
