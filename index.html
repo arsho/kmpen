@@ -6,20 +6,56 @@
 <body>
 <main>
     <div>
-        <button class="graph_data_btn" id="race_dataset">
-            Generate with A1BG expression level & race on KIRC patient survival
+        <button class="graph_data_btn" genename="A1BG" ctype="KIRC" exp="">
+            Generate with A1BG expression level on KIRC patient survival
             dataset
         </button>
-        <button class="graph_data_btn" id="gender_dataset">
-            Generate with A1BG expression level & gender on KIRC patient
-            survival dataset
+        <button class="graph_data_btn" genename="A1BG" ctype="KIRC"
+                exp="Gender">
+            Generate with A1BG expression level & Gender on KIRC patient
+            survival
+            dataset
+        </button>
+        <button class="graph_data_btn" genename="A1BG" ctype="KIRC" exp="Race">
+            Generate with A1BG expression level & Race on KIRC patient survival
+            dataset
+        </button>
+
+        <button class="graph_data_btn" genename="A1BG" ctype="KIRP" exp="">
+            Generate with A1BG expression level on KIRP patient survival
+            dataset
+        </button>
+        <button class="graph_data_btn" genename="A1BG" ctype="KIRP"
+                exp="Gender">
+            Generate with A1BG expression level & Gender on KIRP patient
+            survival
+            dataset
+        </button>
+        <button class="graph_data_btn" genename="A1BG" ctype="KIRP" exp="Race">
+            Generate with A1BG expression level & Race on KIRP patient survival
+            dataset
+        </button>
+
+        <button class="graph_data_btn" genename="A1BG" ctype="LUAD" exp="">
+            Generate with A1BG expression level on LUAD patient survival
+            dataset
+        </button>
+        <button class="graph_data_btn" genename="A1BG" ctype="LUAD"
+                exp="Gender">
+            Generate with A1BG expression level & Gender on LUAD patient
+            survival
+            dataset
+        </button>
+        <button class="graph_data_btn" genename="A1BG" ctype="LUAD" exp="Race">
+            Generate with A1BG expression level & Race on LUAD patient survival
+            dataset
         </button>
     </div>
     <div id="graph">
-        <h3>Click on the chart legend to hide and show the
-            relevant dataset</h3>
         <div>
-        <canvas id="kmgraph"></canvas>
+            <canvas id="kmgraph"></canvas>
+            <span>Click on the chart legend to hide and show the
+            relevant dataset</span>
         </div>
         <div>
             <button class="download_chart" id="png_btn">

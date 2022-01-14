@@ -93,7 +93,7 @@ $(document).ready(function () {
                                 row.status = parseInt(current_data[2]);
                                 row.gene = current_data[3];
                                 row.groups = [];
-                                for(let j = 4; j < current_data.length; j++){
+                                for (let j = 4; j < current_data.length; j++) {
                                     row.groups.push(current_data[j]);
                                 }
                                 const group = row.groups.join("+");
@@ -119,34 +119,25 @@ $(document).ready(function () {
         return {"rows": rows, "columns": columns};
     }
 
-
-    // GENE-Exp-CANCER-KMinput.txt : is tab separated file. It has following columns.
-    // 1. Barcode: Patient ID
-    // 2. Time: Time in days
-    // 3. Status: patient life status (death=0, alive=1)
-    // 4. A1BG: Expression value of A1BG gene in cancer patients
-    // 5. ExpressionLevel:  is Group1, dividing patients based on GENE expression level
-
-    // GENE-Exp-Gender/Race-CANCER-KMinput.txt: is tab separated file. It has following columns.
-    // 1. Barcode: Patient ID
-    // 2. Time: Time in days
-    // 3. Status: patient life status (death=0, alive=1)
-    // 4. A1BG: Expression value of A1BG gene in cancer patients
-    // 5. ExpressionLevel:  is Group1, dividing patients based on GENE expression level
-    // 6. Gender / Race: id Group2, dividing patients based on patient’s gender
-
-    function get_dataset(dataset_type) {
-
-        let data, datafile, description, label;
-        if (dataset_type === "race_dataset") {
-            datafile = 'datafiles/A1BG-R-KMinput.txt';
-            description = 'Effect of A1BG expression level & race on KIRC patient survival dataset';
-            label = ": Dataset from A1BG expression level & race on KIRC patient survival dataset";
-        } else if (dataset_type === "gender_dataset") {
-            datafile = 'datafiles/A1BG-S-KMinput.txt';
-            description = 'Effect of A1BG expression level & gender on KIRC patient survival dataset';
-            label = ": Dataset from A1BG expression level & gender on KIRC patient survival dataset";
+    function get_p_value(ctype, genename, exp) {
+        let p_value = "P-value for gene: " + genename + ', cancer: ' + ctype;
+        if (exp != '') {
+            p_value = "P-value for gene: " + genename + ',exp: ' + exp + ' cancer: ' + ctype;
         }
+        return p_value;
+    }
+
+    function get_dataset(ctype, genename, exp) {
+        let data, datafile, description, label;
+        let relative_url_path = 'datafiles/multiple/';
+        let datafile_name_ar = [genename, 'Exp', ctype, 'KMinput.txt'];
+        description = 'Effect of ' + genename + ' expression level on ' + ctype + ' patient survival dataset';
+        if (exp != '')
+            datafile_name_ar.splice(2, 0, exp);
+        description = 'Effect of ' + genename + ' expression level & ' + exp + ' on ' + ctype + ' patient survival dataset';
+        datafile = datafile_name_ar.join('-');
+        datafile = relative_url_path + datafile;
+        label = get_p_value(ctype, genename, exp);
         data = get_file_data(datafile);
         return {
             "data": data,
@@ -322,13 +313,10 @@ $(document).ready(function () {
     $(".graph_data_btn").on("click", function () {
         $("#graph").hide();
 
-        const id = $(this).attr("id");
-        let dataset;
-        if (id === "race_dataset") {
-            dataset = get_dataset("race_dataset");
-        } else if (id === "gender_dataset") {
-            dataset = get_dataset("gender_dataset");
-        }
+        const ctype = $(this).attr("ctype");
+        const genename = $(this).attr("genename");
+        const exp = $(this).attr("exp");
+        let dataset = get_dataset(ctype, genename, exp);
         show_graph(dataset.data.rows, dataset.description, dataset.label);
         $("#graph").show("slow");
     });
