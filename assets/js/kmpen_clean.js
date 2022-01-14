@@ -119,10 +119,55 @@ $(document).ready(function () {
         return {"rows": rows, "columns": columns};
     }
 
+    function read_p_value(datafile, genename) {
+        genename = "\"" + genename + "\"";
+        var p_value = 0.0;
+        $.ajax({
+            url: datafile,
+            type: "GET",
+            async: false,
+            success: function (data) {
+                let lines = data.split("\n");
+                if (lines.length > 1) {
+                    for (let i = 0; i < lines.length; i++) {
+                        let line = lines[i].trim();
+                        if (line !== "") {
+                            let current_data = line.split("\t");
+                            if (current_data !== "") {
+                                if (i === 0) {
+                                    continue;
+                                }
+                                if (current_data[1] == genename) {
+                                    p_value = parseFloat(current_data[2]);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        });
+
+        return p_value;
+    }
+
     function get_p_value(ctype, genename, exp) {
-        let p_value = "P-value for gene: " + genename + ', cancer: ' + ctype;
-        if (exp != '') {
-            p_value = "P-value for gene: " + genename + ',exp: ' + exp + ' cancer: ' + ctype;
+        let p_value, p_value_file;
+        let relative_url_path = 'datafiles/multiple/';
+        let p_value_file_name_ar = ['Survival', ctype, 'Exp'];
+        if (exp != '')
+            p_value_file_name_ar.splice(3, 0, exp);
+        p_value_file = p_value_file_name_ar.join('-') + '.txt';
+        p_value_file = relative_url_path + p_value_file;
+        p_value = read_p_value(p_value_file, genename);
+        if (p_value < 0.0001) {
+            p_value = 'p < 0.0001';
+        } else if (p_value >= 0.1) {
+            p_value = 'p = ' + p_value.toFixed(2);
+        } else if (p_value >= 0.01) {
+            p_value = 'p = ' + p_value.toFixed(3);
+        } else {
+            p_value = 'p = ' + p_value.toFixed(4);
         }
         return p_value;
     }
@@ -258,7 +303,7 @@ $(document).ready(function () {
                         text: chart_title,
                         padding: {
                             top: 10,
-                            bottom: 10
+                            bottom: 5
                         },
                         font: {
                             size: 18
@@ -266,7 +311,10 @@ $(document).ready(function () {
                     },
                     subtitle: {
                         display: true,
-                        text: chart_subtitle
+                        text: chart_subtitle,
+                        font: {
+                            size: 14
+                        }
                     }
                 },
                 animation: false,
