@@ -3,6 +3,13 @@
 KMPen is a visualization tool to create Kaplan Meier survival probability graph.
 
 ### Features
+#### Clean:
+- No dependency on Bootstrap.
+- Create KM survival probability graph for each group.
+- Read fixed text datafiles and extract data based on them.
+- Read p value from text datafiles.
+- Start probability from 1.
+- Export graph as PNG, JPG, and PDF format.
 #### KIRC:
 - Separate dataset into groups.
 - Create KM survival probability graph for each group.
@@ -14,6 +21,11 @@ KMPen is a visualization tool to create Kaplan Meier survival probability graph.
 - The project can create random dataset and generate Kaplan-Meier survival graph based on the dataset.
 - Download graph as PNG, JPG, and PDF format.
 - Responsive graph
+
+### Demo (Clean)
+
+- Graph with p_value
+  ![p_value](screenshots_clean/km_graph.png)
 
 ### Demo (KIRC)
 
